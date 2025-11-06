@@ -2,25 +2,32 @@
 ## Project Overview
 * This project provides a comprehensive actuarial and data science analysis of claims data to identify key risk drivers, segment the customer base by risk profile, and perform predictive modeling of claims severity and frequency
 * The primary goal is to leverage statistical methods and machine learning techniques to help an insurance provider understand which customer characteristics, policy types, and behavioral patterns are most strongly associated with higher claims activity, ultimately informing underwriting, pricing, and loss control strategies.
-   Executive Summary of FindingsThe analysis successfully identified several key relationships across frequency, severity, and customer attributes:
-Premium is a Key Predictor: A strong positive linear relationship was found between a customer's Premium Amount and both Claims Frequency and Claims Adjustment (severity proxy). This suggests the current pricing model is moderately effective in capturing overall risk.
-Claims Frequency vs. Severity: A significant positive correlation ($R^2=0.65$) exists between Claims Frequency and the Claims Adjustment amount, confirming that customers with more claims also tend to have more expensive claims.
-Customer Segmentation: K-Means clustering effectively segmented the customer base into four distinct risk groups, including a High-Risk/High-Severity Cluster (Cluster 0) characterized by both high frequency (1.68 claims) and high adjustment amounts ($245.23).
-Categorical Drivers: Statistical testing (ANOVA) indicated that traditional categorical features like Marital_Status, Region, and Policy_Type did not show a statistically significant difference in their mean Claims Adjustment (severity).
- Technical MethodologyThe analysis was executed in two main stages: Exploratory Data Analysis (EDA) & Risk Driver Identification and Advanced Modeling & Segmentation.
-Stage 1: Claims Driver Analysis (Risk_Driver_Analysis.md & accompanying Python)This stage focused on descriptive statistics and inferential testing to pinpoint features that are associated with claims activity.
-MethodPurposeKey Metrics
-Descriptive StatisticsGrouping claims by Frequency and Severity to observe differences in mean numerical features (Age, Credit_Score, Premium_Amount).Mean values, Cross-tabulation Proportions.
-Pearson CorrelationQuantifying the linear relationship between numerical features and claims metrics (Claims_Frequency, Claims_Adjustment).Correlation Coefficient ($r$).
-ANOVA (Analysis of Variance)Testing the statistical significance of categorical features (Region, Marital_Status) on the mean Claims_Adjustment amount.F-Statistic, P-Value ($p < 0.05$ for significance).
+## Executive Summary of FindingsThe analysis successfully identified several key relationships across frequency, severity, and customer attributes:
+* Premium is a Key Predictor: A strong positive linear relationship was found between a customer's Premium Amount and both Claims Frequency and Claims Adjustment (severity proxy). This suggests the current pricing model is moderately effective in capturing overall risk.
+* Claims Frequency vs. Severity: A significant positive correlation ($R^2=0.65$) exists between Claims Frequency and the Claims Adjustment amount, confirming that customers with more claims also tend to have more expensive claims.
+* Customer Segmentation: K-Means clustering effectively segmented the customer base into four distinct risk groups, including a High-Risk/High-Severity Cluster (Cluster 0) characterized by both high frequency (1.68 claims) and high adjustment amounts ($245.23).
+* Categorical Drivers: Statistical testing (ANOVA) indicated that traditional categorical features like Marital_Status, Region, and Policy_Type did not show a statistically significant difference in their mean Claims Adjustment (severity).
 
-Stage 2: Advanced Modeling & Segmentation (Advanced_Modeling.py & accompanying Python)This stage used predictive and unsupervised learning to model risk and segment the customer base.
-MethodPurposeKey Metrics
-Linear RegressionModeling the relationship between Claims_Frequency (predictor) and Claims_Adjustment (target) to understand severity scaling.Coefficient ($\beta$), R-squared ($R^2$).
-K-Means ClusteringSegmenting customers into homogeneous risk profiles based on Claims_Frequency, Claims_Adjustment, and Claims_Severity.Elbow Method (Optimal K), Cluster Means.
-Time Series Analysis (Simulated)Aggregating claims data monthly to identify seasonality or trends and demonstrate simple forecasting (Rolling Mean).Monthly Averages, Rolling Mean Forecast.
 
- Python Script: Advanced Modeling & SegmentationThe following script performs Linear Regression, K-Means Clustering, and a Time-Series analysis.
+## Technical Methodology: This analysis was executed with an emphasis on Risk Driver Identification and Advanced Modeling & Segmentation.
+* **Stage 1: Claims Driver Analysis**
+** This stage focused on descriptive statistics and inferential testing to pinpoint features that are associated with claims activity.
+
+|Method|Purpose|Key Metrics|
+|-|-|-|
+|Descriptive Statistics|Grouping claims by Frequency and Severity to observe differences in mean numerical features (Age, Credit_Score, Premium_Amount).|Mean values, Cross-tabulation Proportions.|
+|Pearson Correlation|Quantifying the linear relationship between numerical features and claims metrics (Claims_Frequency, Claims_Adjustment).|Correlation Coefficient ($r$).|
+|ANOVA (Analysis of Variance)|Testing the statistical significance of categorical features (Region, Marital_Status) on the mean Claims_Adjustment amount.|F-Statistic, P-Value ($p < 0.05$ for significance).|
+
+* **Stage 2: Advanced Modeling & Segmentation**
+** This stage used predictive and unsupervised learning to model risk and segment the customer base.
+  
+|Method|Purpose|Key Metrics|
+|-|-|-|
+|Linear Regression|Modeling the relationship between Claims_Frequency (predictor) and Claims_Adjustment (target) to understand severity scaling.|Coefficient ($\beta$), R-squared ($R^2$).|
+|K-Means Clustering|Segmenting customers into homogeneous risk profiles based on Claims_Frequency, Claims_Adjustment, and Claims_Severity.|Elbow Method (Optimal K), Cluster Means.|
+|Time Series Analysis|Aggregating claims data monthly to identify seasonality or trends and demonstrate simple forecasting (Rolling Mean).|Monthly Averages, Rolling Mean Forecast.|
+
 
 ```Python
 import pandas as pd
@@ -251,7 +258,24 @@ if __name__ == '__main__':
     #   analyze_time_series(df.copy())
         
     print("\nAdvanced claims analysis script finished.")
-📈 Analysis Results & InterpretationSection 1: Linear Modeling: Claims Adjustment vs. FrequencyThis linear model investigates the core relationship between how often a client claims and the average cost of those claims.MetricValueModel Coefficient (Scaled)0.804R-squared Score ($R^2$)0.646Interpretation:The high Model Coefficient (0.804) indicates a strong, positive, linear relationship: for every standard deviation increase in Claims Frequency, Claims Adjustment increases by 0.804 standard deviations.The R-squared score of 0.646 suggests that approximately 64.6% of the variance in Claims Adjustment can be explained by the Claims Frequency alone. This confirms that high frequency is strongly correlated with high severity, which is critical for risk modeling.Section 2: Cluster Analysis: K-Means SegmentationK-Means with $K=4$ was used to group customers based on their combined claims profile (Frequency, Adjustment, Severity).Cluster Profiles (Averages):ClusterClaims_FrequencyClaims_AdjustmentClaims_Severity_EncRisk Profile01.68245.232.62High-Risk/High-Severity10.000.001.00Low-Risk (No Claims)20.000.002.32Medium-Risk (Potentially Policy-Specific)31.2269.811.18Medium-Frequency/Low-SeverityKey Finding:Cluster 0 represents the most concerning segment, exhibiting both high frequency (1.68 claims average) and the highest claims adjustment amount ($245.23). These customers should be the primary focus for loss prevention efforts and premium adjustments.Clusters 1 and 2 are effectively no-claim groups, differentiating only slightly on the encoded severity metric (which is less relevant for zero claims).Section 3: Simulated Time-Series AnalysisThis simulation observes the monthly average Claims Frequency over a 12-month period and uses a 3-month rolling mean to forecast the subsequent month.Simulated Monthly Claims Frequency Data and 1-Month Rolling Mean Forecast:Policy_DateAvg_Claims_FrequencyRolling_MeanForecast............2024-10-310.5250.5050.4792024-11-300.4660.5030.5052024-12-310.5230.5050.503Key Finding:The time series plot shows a relatively stable average claims frequency throughout the year, fluctuating around a mean of $\sim0.50$ claims per month.The 3-Month Rolling Mean Forecast tracks the actual data closely, demonstrating a simple but effective smoothing technique for short-term prediction in a stable environment. In a real-world scenario, this would be extended with ARIMA/Prophet models for better accuracy.🔍 Code: Exploratory & Statistical AnalysisThe following script performs correlation analysis and statistical testing (ANOVA) to quantify the influence of individual numerical and categorical drivers.Pythonimport pandas as pd
+```
+
+Analysis Results & Interpretation
+Section 1: Linear Modeling: Claims Adjustment vs. Frequency
+This linear model investigates the core relationship between how often a client claims and the average cost of those claims.MetricValueModel Coefficient (Scaled)0.804R-squared Score ($R^2$)0.646Interpretation:The high Model Coefficient (0.804) indicates a strong, positive, linear relationship: for every standard deviation increase in Claims Frequency, Claims Adjustment increases by 0.804 standard deviations.The R-squared score of 0.646 suggests that approximately 64.6% of the variance in Claims Adjustment can be explained by the Claims Frequency alone. This confirms that high frequency is strongly correlated with high severity, which is critical for risk modeling.
+
+Section 2: Cluster Analysis: K-Means SegmentationK-Means with $K=4$ was used to group customers based on their combined claims profile (Frequency, Adjustment, Severity).
+Cluster Profiles (Averages):ClusterClaims_FrequencyClaims_AdjustmentClaims_Severity_EncRisk Profile01.68245.232.62High-Risk/High-Severity10.000.001.00Low-Risk (No Claims)20.000.002.32Medium-Risk (Potentially Policy-Specific)31.2269.811.18Medium-Frequency/Low-SeverityKey Finding:Cluster 0 represents the most concerning segment, exhibiting both high frequency (1.68 claims average) and the highest claims adjustment amount ($245.23). These customers should be the primary focus for loss prevention efforts and premium adjustments.Clusters 1 and 2 are effectively no-claim groups, differentiating only slightly on the encoded severity metric (which is less relevant for zero claims).
+
+Section 3: Simulated Time-Series AnalysisThis simulation observes the monthly average Claims Frequency over a 12-month period and uses a 3-month rolling mean to forecast the subsequent month.Simulated Monthly Claims Frequency Data and 1-Month Rolling Mean Forecast:Policy_DateAvg_Claims_FrequencyRolling_MeanForecast
+
+............2024-10-310.5250.5050.4792024-11-300.4660.5030.5052024-12-310.5230.5050.503Key Finding:The time series plot shows a relatively stable average claims frequency throughout the year, fluctuating around a mean of $\sim0.50$ claims per month.The 3-Month Rolling Mean Forecast tracks the actual data closely, demonstrating a simple but effective smoothing technique for short-term prediction in a stable environment. In a real-world scenario, this would be extended with ARIMA/Prophet models for better accuracy.
+
+
+Code: Exploratory & Statistical AnalysisThe following script performs correlation analysis and statistical testing (ANOVA) to quantify the influence of individual numerical and categorical drivers.
+
+```Python
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -404,4 +428,6 @@ if __name__ == '__main__':
     #   quantify_categorical_influence(df.copy())
         
     print("\nStatistical claims driver analysis script finished.")
-📊 Statistical Analysis ResultsSection 1: Numerical Drivers: Correlation AnalysisDriverClaims_FrequencyClaims_AdjustmentPremium_Amount0.3550.439Age-0.006-0.008Website_Visits0.0050.005Total_Discounts0.003-0.003Credit_Score0.0020.006Key Finding:Premium Amount is the strongest linear driver, showing a moderate positive correlation with both frequency ($r=0.355$) and adjustment ($r=0.439$). This validates the pricing strategy, as higher premiums are indeed being paid by clients who claim more often and have higher adjustment costs.Other drivers (Age, Credit_Score, Website_Visits) show near-zero correlation, suggesting that these attributes have a weak linear influence on claims, and their relationship may be non-linear or indirect.Section 2: Categorical Drivers: ANOVA (Influence on Claims Adjustment)ANOVA tests whether the mean Claims Adjustment differs significantly between groups (e.g., Single vs. Married).DriverF_StatisticP_ValueSignificant_at_5%Marital_Status1.030.37857FalsePolicy_Type0.400.52795FalseRegion0.080.92231FalseKey Finding:No categorical drivers were found to have a statistically significant influence (P-Value > 0.05) on the mean Claims Adjustment. This implies that factors like marital status or region do not lead to statistically different average claim costs in this dataset, suggesting a need to explore interaction effects or other, more granular features.
+```
+📊 Statistical Analysis Results
+Section 1: Numerical Drivers: Correlation AnalysisDriverClaims_FrequencyClaims_AdjustmentPremium_Amount0.3550.439Age-0.006-0.008Website_Visits0.0050.005Total_Discounts0.003-0.003Credit_Score0.0020.006Key Finding:Premium Amount is the strongest linear driver, showing a moderate positive correlation with both frequency ($r=0.355$) and adjustment ($r=0.439$). This validates the pricing strategy, as higher premiums are indeed being paid by clients who claim more often and have higher adjustment costs.Other drivers (Age, Credit_Score, Website_Visits) show near-zero correlation, suggesting that these attributes have a weak linear influence on claims, and their relationship may be non-linear or indirect.Section 2: Categorical Drivers: ANOVA (Influence on Claims Adjustment)ANOVA tests whether the mean Claims Adjustment differs significantly between groups (e.g., Single vs. Married).DriverF_StatisticP_ValueSignificant_at_5%Marital_Status1.030.37857FalsePolicy_Type0.400.52795FalseRegion0.080.92231FalseKey Finding:No categorical drivers were found to have a statistically significant influence (P-Value > 0.05) on the mean Claims Adjustment. This implies that factors like marital status or region do not lead to statistically different average claim costs in this dataset, suggesting a need to explore interaction effects or other, more granular features.
