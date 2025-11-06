@@ -1,16 +1,15 @@
-First we will start the EDA of the synthetic data
+# Exploratory Data Analysis
+## This section provides a preliminary dataset analysis, focusing on identifying missing values, validating data types, examining the overall schema, and performing initial descriptive statistics.
 
+### We'll start by importing all necessary Python libraries and specifying the path to our dataset. To run locally remember to update the file path in the setup section to match your local environment.
 ```python
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.set_style("whitegrid")
-plt.rcParams['figure.figsize'] = (10, 6)
-plt.rcParams['figure.dpi'] = 100
-df=pd.read_csv("/kaggle/input/insurance-data-personal-auto-line-of-business/synthetic_insurance_data.csv")
-df.head(5)
+df=pd.read_csv("/input/insurance-data-personal-auto-line-of-business/synthetic_insurance_data.csv")
 ```
+### We use the .head() method to display the first five rows of this dataset, providing a quick glance at what the dataset holds.
 
 | Age | Is_Senior | Marital_Status | Married_Premium_Discount | Prior_Insurance | Prior_Insurance_Premium_Adjustment | Claims_Frequency | Claims_Severity | Claims_Adjustment | Policy_Type | ... | Time_Since_First_Contact | Conversion_Status | Website_Visits | Inquiries | Quotes_Requested | Time_to_Conversion | Credit_Score | Premium_Adjustment_Credit | Region | Premium_Adjustment_Region |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -20,56 +19,7 @@ df.head(5)
 | 62 | 1 | Married | 86 | >5 years | 0 | 1 | Low | 50 | Full Coverage | ... | 416 | 2 | 2 | 2 | 80 | 9 | -50 | Urban | 10 |
 | 36 | 0 | Single | 0 | >5 years | 0 | 2 | Low | 100 | Full Coverage | ... | 141 | 8 | 4 | 2 | 106 | 625 | 0 | Suburban | 50 |
 
-```python
-df.info()
-```
-| # | Column | Non-Null Count | Dtype |
-|---|---|---|---|
-| 0 |Age| 10000 | int64 |
-| 1 |Is_Senior| 10000 | int64 |
-| 2 |Marital_Status| 10000 | object |
-| 3 |Married_Premium_Discount| 10000 | int64 |
-| 4 |Prior_Insurance| 10000 | object |
-| 5 |Prior_Insurance_Premium_Adjustment| 10000 | int64 |
-| 6 |Claims_Frequency| 10000 | int64 |
-| 7 |Claims_Severity| 10000 | object |
-| 8 |Claims_Adjustment| 10000 | int64 |
-| 9 |Policy_Type| 10000 | object |
-| 10 |Policy_Adjustment| 10000 | int64 |
-| 11 |Premium_Amount| 10000 | int64 |
-| 12 |Safe_Driver_Discount| 10000 | int64 |
-| 13 |Multi_Policy_Discount | 10000 | int64 |
-| 14 |Bundling_Discount | 10000 | int64 |
-| 15 |Total_Discounts | 10000 | int64 |
-| 16 |Source_of_Lead | 10000 | object |
-| 17 |Time_Since_First_Contact | 10000 | int64 |
-| 18 |Conversion_Status | 10000 | int64 |
-| 19 |Website_Visits | 10000 | int64 |
-| 20 |Inquiries | 10000 | int64 |
-| 21 |Quotes_Requested | 10000 | int64 |
-| 22 |Time_to_Conversion | 10000 | int64 |
-| 23 |Credit_Score | 10000 | int64 |
-| 24 |Premium_Adjustment_Credit | 10000 | int64 |
-| 25 |Region | 10000 | object |
-| 26 |Premium_Adjustment_Region | 10000 | int64 |
-dtypes: int64(21), object(6)
-memory usage: 2.1+ MB
-
-```python
-df.describe()
-```
-
-|  | Age | Is_Senior | Married_Premium_Discount | Prior_Insurance_Premium_Adjustment | Claims_Frequency | Claims_Adjustment | Policy_Adjustment | Premium_Amount | Safe_Driver_Discount | Multi_Policy_Discount | ... | Total_Discounts | Time_Since_First_Contact | Conversion_Status | Website_Visits | Inquiries | Quotes_Requested | Time_to_Conversion | Credit_Score | Premium_Adjustment_Credit | Premium_Adjustment_Region |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|-|
-| **count** | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | ... | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 | 10000.00 |
-| **mean** | 39.99 | 0.16 | 42.13 | 47.62 | 0.50 | 36.78 | -79.86 | 2219.57 | 0.20 | 0.31 | ... | 30.11 | 15.48 | 0.58 | 5.02 | 2.00 | 2.00 | 46.07 | 714.25 | -11.32 | 64.32 |
-| **std** | 14.05 | 0.37 | 42.99 | 34.35 | 0.72 | 65.91 | 97.96 | 148.52 | 0.40 | 0.46 | ... | 33.69 | 8.68 | 0.49 | 2.24 | 1.42 | 0.82 | 45.45 | 9.75 | 48.70 | 39.23 |
-| **min** | 18.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | -200.00 | 1800.00 | 0.00 | 0.00 | ... | 0.00 | 1.00 | 0.00 | 0.00 | 0.00 | 1.00 | 1.00 | 704.00 | -50.00 | 0.00 |
-| **25%** | 29.00 | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | -200.00 | 2100.00 | 0.00 | 0.00 | ... | 0.00 | 8.00 | 0.00 | 3.00 | 1.00 | 1.00 | 6.00 | 715.00 | -50.00 | 50.00 |
-| **50%** | 39.00 | 0.00 | 0.00 | 50.00 | 0.00 | 0.00 | 0.00 | 2236.00 | 0.00 | 0.00 | ... | 50.00 | 16.00 | 1.00 | 5.00 | 2.00 | 2.00 | 12.00 | 715.00 | -50.00 | 50.00 |
-| **75%** | 50.00 | 0.00 | 86.00 | 50.00 | 1.00 | 50.00 | 0.00 | 2336.00 | 0.00 | 1.00 | ... | 50.00 | 23.00 | 1.00 | 6.00 | 3.00 | 3.00 | 99.00 | 748.00 | 50.00 | 100.00 |
-| **max** | 90.00 | 1.00 | 86.00 | 100.00 | 5.00 | 800.00 | 0.00 | 2936.00 | 1.00 | 1.00 | ... | 150.00 | 30.00 | 1.00 | 16.00 | 9.00 | 3.00 | 99.00 | 850.00 | 50.00 | 100.00 |
-
+## Next, we assess data completeness by using the .isnull().sum() sequence to identify the total number of null entries present in each column.
 ```python
 df.isnull().sum()
 ```
@@ -104,45 +54,70 @@ df.isnull().sum()
 | Premium_Adjustment_Region | 0 |
 dtype:int64
 
+### As a final step in our initial quality checks, we check for data redundancy by summing the output of the .duplicated() method to count all duplicate rows.
 ```python
 df.duplicated().sum()
 0
 ```
 
+# The following Python function is designed to execute exploratory data analysis and is self-documented for ease of use and understanding.
 ```python
-# First we will define a function to do some rudimentry EDA, this is a function I can recall for later use for other datasets
+"""    
+    This EDA process includes:
+    1. Initial Data Inspection (info, descriptive statistics).
+    2. Categorical Feature Summary (value counts and proportions).
+    3. Target Variable Analysis ('Conversion_Status' distribution and overall rate).
+    4. Univariate Analysis for key numerical columns (histograms and box plots).
+    5. Bivariate Analysis against 'Conversion_Status' (numerical box plots, categorical bar plots).
+    6. Correlation Analysis (heatmap for features relevant to conversion).
+
+    Args:
+        df (pd.DataFrame): The input DataFrame for analysis.
+
+    Considerations:
+       The data utilized is synthetic and was selected solely for its function as a training or demonstration medium. The focus of this exercise is the technical execution and the effective application of Python's data manipulation and analysis tools.
+    """
 def perform_eda(df):
     df.info()
+    # Displays column data types, non-null values, and memory usage df.info()
     print(df.describe().T)
-    
-    print("\n--- Categorical Feature Summary ---")
+    # Generates descriptive statistics for numerical columns (mean, std, min, max, quartiles)
+    print(df.describe().T)
+
+    print("\n--- 1. Categorical Feature Summary ---")
     categorical_cols = df.select_dtypes(include=['object']).columns
+    # Selects all columns with 'object' dtype
     for col in categorical_cols:
         print(f"\n{col} Value Counts:")
-        # Display the normalized counts (proportions)
+        # Display the normalized counts (proportions) for each unique category
         print(df[col].value_counts(normalize=True).round(3))
 
-    print("\n--- 2. Target Variable Analysis (Conversion_Status) ---")
+    print("\n--- 2. Target Variable Analysis ---")
+    # Checks if the target variable is present in the DataFrame
     if 'Conversion_Status' in df.columns:
+        # Calculates and prints the overall conversion rate
         conversion_rate = df['Conversion_Status'].mean()
         print(f"Overall Conversion Rate: {conversion_rate:.2%}")
-        
+
+        # Plots the distribution of the target variable
         plt.figure(figsize=(6, 4))
         sns.countplot(x='Conversion_Status', data=df, palette='pastel')
         plt.title('Distribution of Conversion Status (0=No, 1=Yes)')
         plt.show()
     else:
-        print("Warning: 'Conversion_Status' column not found for target analysis.")
+        print("Erron in 2")
 
-    print("\n--- 3. Univariate Analysis (Key Numerical Distributions) ---")
+    print("\n--- 3. Univariate Analysis ---")
+    # List of key numerical columns expected for distribution analysis
     numerical_cols = ['Age', 'Premium_Amount', 'Credit_Score', 'Total_Discounts', 'Time_Since_First_Contact']
     
     existing_numerical_cols = [col for col in numerical_cols if col in df.columns]
 
     if existing_numerical_cols:
+        # Sets up subplots for combined histogram and box plot for each feature
         fig, axes = plt.subplots(len(existing_numerical_cols), 2, figsize=(15, 4 * len(existing_numerical_cols)))
         
-        # Handle case where there is only one row of plots (axes is not a 2D array)
+        # Handle case where there is only one row of plots
         if len(existing_numerical_cols) == 1:
             axes = np.array([axes])
 
@@ -157,9 +132,9 @@ def perform_eda(df):
         plt.tight_layout()
         plt.show()
     else:
-        print("Warning: None of the key numerical columns were found for univariate analysis.")
+        print("Error in 3")
 
-    print("\n--- 4. Bivariate Analysis (Features vs. Conversion) ---")
+    print("\n--- 4. Bivariate Analysis ---")
     if 'Conversion_Status' in df.columns:
         fig, axes = plt.subplots(2, 3, figsize=(18, 10))
         axes = axes.flatten()
@@ -183,6 +158,7 @@ def perform_eda(df):
 
         for i, col in enumerate(existing_cat_bivar):
             if i < len(axes):
+                # Calculate the mean conversion rate for each category
                 conversion_pivot = df.groupby(col)['Conversion_Status'].mean().sort_values(ascending=False)
                 sns.barplot(x=conversion_pivot.index, y=conversion_pivot.values, ax=axes[i], palette='viridis')
                 axes[i].set_title(f'Conversion Rate by {col}')
@@ -195,13 +171,15 @@ def perform_eda(df):
     print("\n--- 5. Correlation Analysis (Heatmap) ---")
     
     if 'Conversion_Status' in df.columns:
+        # Selects only numerical columns for calculation
         numerical_df = df.select_dtypes(include=np.number)
         
         corr_matrix = numerical_df.corr()
         
         plt.figure(figsize=(12, 10))
         target_corr = corr_matrix['Conversion_Status'].sort_values(ascending=False)
-        
+
+        # Filters for features with absolute correlation > 0.1 with the target
         relevant_features = target_corr[abs(target_corr) > 0.1].index.tolist()
         if 'Conversion_Status' not in relevant_features:
             relevant_features.append('Conversion_Status') 
@@ -217,38 +195,32 @@ def perform_eda(df):
         plt.title('Correlation Heatmap for Features Relevant to Conversion Status')
         plt.show()
     else:
-        print("Warning: Cannot perform correlation analysis without 'Conversion_Status' column.")
+        print("Error in 5")
 
 
 if __name__ == '__main__':
-    print("--- Starting Exploratory Data Analysis (EDA) ---")
     
     try:
-        df = pd.read_csv('/kaggle/input/insurance-data-personal-auto-line-of-business/synthetic_insurance_data.csv')
+        df = pd.read_csv('/input/insurance-data-personal-auto-line-of-business/synthetic_insurance_data.csv')
         print(f"Successfully loaded data with {len(df)} rows and {len(df.columns)} columns.")
-        
-        # Run the EDA
+
+        # Run the EDA function
         perform_eda(df)
-        
+
     except FileNotFoundError:
         print("ERROR: File 'your_dataset_file.csv' not found.")
         print("Please modify the script to load your actual dataset file path and name.")
     except Exception as e:
         print(f"An error occurred during data loading or processing: {e}")
     
-    print("\nEDA script finished. Review the outputs and charts to draw conclusions.")
-
-perform_eda(df)
+# The final call outside of the `if __name__ == '__main__':` block is redundant if the script is run directly.
+# I've commented it out to prevent double-execution if the user is running the script as intended.
+# perform_eda(df)
 ```
 
 --- 1. Initial Data Structure and Summary ---
 
---- DataFrame Info ---
-<class 'pandas.core.frame.DataFrame'>
-
-RangeIndex: 10000 entries, 0 to 9999
-
-Data columns (total 27 columns):
+## To get an initial overview of the dataset's structure, we'll examine the output of the .info() function.
 
 | # | Column | Non-Null Count | Dtype |
 |---|---|---|---|
@@ -282,7 +254,7 @@ Data columns (total 27 columns):
 dtypes: int64(21), object(6)
 memory usage: 2.1+ MB
 
---- Numerical Feature Descriptive Statistics ---
+## We will now inspect the summary statistics for the numerical features of this dataset by executing the .describe() function.
 
 |count|mean|std|min|
 |-|-|-|-|
@@ -332,8 +304,7 @@ memory usage: 2.1+ MB
 |Premium_Adjustment_Credit|-50.0|-50.0|50.0|50.0|  
 |Premium_Adjustment_Region|50.0|50.0|100.0|100.0| 
 
---- Categorical Feature Summary ---
-
+## This is the categorical feature summary, which aids in our understanding of the unique labels and potential groupings within the data.
 ### Marital_Status Value Counts:
 |Marital_Status| |
 |-|-|
@@ -382,7 +353,7 @@ Name: proportion, dtype: float64
 |Rural|0.206|
 Name: proportion, dtype: float64
 
-## --- 2. Target Variable Analysis (Conversion_Status) ---
+## This section is dedicated to understanding Conversion_Status, which serves as the section's target variable.
 ##### Overall Conversion Rate: 57.67%
 
 <img width="549" height="393" alt="download" src="https://github.com/user-attachments/assets/3e2e0516-41d4-48d3-91a8-df71ac80595d" />
