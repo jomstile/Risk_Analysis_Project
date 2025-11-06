@@ -387,6 +387,255 @@ if __name__ == '__main__':
         
     print("\nAdvanced claims analysis script finished.")
 ```
+### --- 1. Linear Modeling: Claims Adjustment vs. Frequency ---
+**Model Coefficient (Scaled):** 0.804
+**Model Intercept (Scaled):** -0.000
+**R-squared Score:** 0.646
+Interpretation: A positive coefficient indicates that as Claims Frequency increases, the average Claims Adjustment amount tends to increase.
+<img width="850" height="547" alt="download" src="https://github.com/user-attachments/assets/7ac0753d-4564-42cd-ab20-e49ad5ddfdad" />
+
+### --- 2. Cluster Analysis: K-Means Segmentation ---
+<img width="713" height="470" alt="download" src="https://github.com/user-attachments/assets/1d95cc6a-f860-483a-ad9f-d16d3f2d2f70" />
+Running K-Means with Optimal K = 4
+
+#### Cluster Profiles (Averages):
+|Cluster|Claims_Frequency|Claims_Adjustment|Claims_Severity_Enc|
+|-|-|-|-|                                                          
+|0|1.68|245.23|2.62|
+|1|0.00|0.00|1.00|
+|2|0.00|0.00|2.32|
+|3|1.22|69.81|1.18|
+
+<img width="850" height="701" alt="download" src="https://github.com/user-attachments/assets/3cf54882-90dd-497e-bde3-b5326709fdc5" />
+
+### --- 3. Simulated Time-Series Analysis ---
+
+Simulated Monthly Claims Frequency Data and 1-Month Rolling Mean Forecast:
+|Policy_Date|Avg_Claims_Frequency|Rolling_Mean|Forecast|
+|-|-|-|-|                                              
+|2024-01-31|0.481|0.494|0.494|
+|2024-02-29|0.486|0.494|0.494|
+|2024-03-31|0.513|0.494|0.494|
+|2024-04-30|0.522|0.507|0.494|
+|2024-05-31|0.492|0.509|0.507|
+|2024-06-30|0.520|0.511|0.509|
+|2024-07-31|0.448|0.487|0.511|
+|2024-08-31|0.472|0.480|0.487|
+|2024-09-30|0.517|0.479|0.480|
+|2024-10-31|0.525|0.505|0.479|
+|2024-11-30|0.466|0.503|0.505|
+|2024-12-31|0.523|0.505|0.503|
+
+<img width="1190" height="590" alt="download" src="https://github.com/user-attachments/assets/2f435a48-fdcf-43ce-a79b-b13c47cb062b" />
+
+```
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats # Required for ANOVA testing
+
+# Configuration for plots
+sns.set_style("whitegrid")
+plt.rcParams['figure.figsize'] = (12, 8)
+plt.rcParams['figure.dpi'] = 100
+
+# Significance level for p-value tests
+ALPHA = 0.05 
+
+def load_data(file_path):
+    """Loads the dataset from the specified file path."""
+    try:
+        df = pd.read_csv(file_path)
+        print(f"Successfully loaded data: {len(df)} rows, {len(df.columns)} columns.")
+        return df
+    except FileNotFoundError:
+        print(f"ERROR: File '{file_path}' not found. Please check the path.")
+        return None
+    except Exception as e:
+        print(f"An error occurred during data loading: {e}")
+        return None
+
+def quantify_numerical_influence(df):
+    """
+    SECTION 1: Quantify the linear influence (Correlation) of Numerical Drivers
+    on Claims Frequency and Claims Adjustment (Severity Proxy).
+    """
+    print("\n--- 1. Numerical Drivers: Correlation Analysis ---")
+
+    # Features to test influence of
+    numerical_drivers = ['Age', 'Credit_Score', 'Premium_Amount', 'Total_Discounts', 'Website_Visits']
+    # Targets to be influenced
+    claims_targets = ['Claims_Frequency', 'Claims_Adjustment']
+
+    # Filter for existing columns
+    numerical_drivers = [col for col in numerical_drivers if col in df.columns]
+    claims_targets = [col for col in claims_targets if col in df.columns]
+    
+    if not numerical_drivers or not claims_targets:
+        print("Warning: Missing required columns for numerical influence analysis. Skipping.")
+        return
+
+    # Calculate the Pearson correlation matrix
+    correlation_matrix = df[numerical_drivers + claims_targets].corr()
+    
+    # Extract correlations of drivers with claims targets
+    claims_correlations = correlation_matrix.loc[numerical_drivers, claims_targets]
+    
+    # Add absolute correlation for easy sorting
+    claims_correlations['Abs_Frequency_Corr'] = claims_correlations['Claims_Frequency'].abs()
+    claims_correlations['Abs_Adjustment_Corr'] = claims_correlations['Claims_Adjustment'].abs()
+    
+    print("\nCorrelation of Numerical Drivers with Claims Metrics:")
+    print("Interpretation: Closer to 1 or -1 means stronger linear influence.")
+    print(claims_correlations.sort_values(by='Abs_Frequency_Corr', ascending=False).to_string(float_format="{:.3f}".format))
+    
+    # Visualization: Heatmap
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(
+        claims_correlations.drop(columns=['Abs_Frequency_Corr', 'Abs_Adjustment_Corr']),
+        annot=True, 
+        cmap='coolwarm', 
+        fmt=".2f", 
+        linewidths=.5, 
+        cbar_kws={'label': 'Pearson Correlation'}
+    )
+    plt.title('Correlation of Numerical Features with Claims Metrics')
+    plt.tight_layout()
+    plt.show()
+
+def quantify_categorical_influence(df):
+    """
+    SECTION 2: Quantify the statistical influence (ANOVA) of Categorical Drivers
+    on Claims Adjustment (Severity Proxy).
+    """
+    print("\n--- 2. Categorical Drivers: ANOVA (Influence on Claims Adjustment) ---")
+
+    # Features to test influence of
+    categorical_drivers = ['Marital_Status', 'Region', 'Policy_Type']
+    claims_target = 'Claims_Adjustment'
+    
+    # Filter for existing columns and ensure no NaNs in target
+    categorical_drivers = [col for col in categorical_drivers if col in df.columns]
+    if claims_target not in df.columns or not categorical_drivers:
+        print("Warning: Missing required columns for categorical influence analysis. Skipping.")
+        return
+        
+    df_clean = df.dropna(subset=[claims_target])
+
+    anova_results = []
+
+    for driver in categorical_drivers:
+        # 1. Group the target variable by the categories
+        # Ensure we handle potential errors if a driver column has non-numeric data for ANOVA
+        try:
+            groups = [
+                df_clean[df_clean[driver] == category][claims_target].values
+                for category in df_clean[driver].unique()
+            ]
+        
+            # 2. Perform one-way ANOVA test (requires SciPy)
+            # ANOVA tests if the mean Claims Adjustment is significantly different across the categories
+            f_stat, p_value = stats.f_oneway(*groups)
+            
+            # 3. Determine significance
+            is_significant = p_value < ALPHA
+            
+            anova_results.append({
+                'Driver': driver,
+                'F_Statistic': f_stat,
+                'P_Value': p_value,
+                f'Significant_at_{ALPHA*100:.0f}%': is_significant
+            })
+        except Exception as e:
+            print(f"Skipping ANOVA for {driver}: {e}")
+            continue
+
+
+    results_df = pd.DataFrame(anova_results).sort_values(by='F_Statistic', ascending=False)
+    
+    print("\nANOVA Test Results for Claims Adjustment:")
+    print("Interpretation: A low P-Value (< 0.05) and high F-Statistic means the category has a SIGNIFICANT influence on the average Claims Adjustment amount.")
+    
+    # FIX: Use 'formatters' with callable functions for column-specific string formatting
+    custom_formatters = {
+        "F_Statistic": lambda x: f"{x:.2f}",
+        "P_Value": lambda x: f"{x:.5f}"
+    }
+    
+    # Only use formatters for columns that exist in results_df
+    final_formatters = {k: v for k, v in custom_formatters.items() if k in results_df.columns}
+
+    print(results_df.to_string(index=False, formatters=final_formatters))
+    
+    # Visualization: Mean Claims Adjustment by significant groups
+    significant_drivers = results_df[results_df[f'Significant_at_{ALPHA*100:.0f}%'] == True]['Driver'].tolist()
+    
+    if significant_drivers:
+        print(f"\nVisualizing Means for Significant Drivers ({', '.join(significant_drivers)}):")
+        fig, axes = plt.subplots(1, len(significant_drivers), figsize=(6 * len(significant_drivers), 5))
+        axes = np.array([axes]).flatten() # Ensure axes is iterable even if only one plot
+
+        for i, driver in enumerate(significant_drivers):
+            # Ensure the driver column exists before grouping
+            if driver in df.columns:
+                mean_adj = df.groupby(driver)[claims_target].mean().sort_values(ascending=False)
+                sns.barplot(x=mean_adj.index, y=mean_adj.values, ax=axes[i], palette='YlOrRd')
+                axes[i].set_title(f'Mean Claims Adjustment by {driver}')
+                axes[i].set_ylabel('Mean Claims Adjustment')
+                axes[i].tick_params(axis='x', rotation=45)
+            
+        plt.tight_layout()
+        plt.show()
+    else:
+        print("\nNo categorical drivers were found to have a statistically significant influence on Claims Adjustment.")
+
+
+if __name__ == '__main__':
+    print("--- Starting Claims Risk Driver Statistical Modeling Script ---")
+    
+    # -------------------------------------------------------------------------
+    # ACTION REQUIRED: Replace 'your_dataset_file.csv' with your actual file path.
+    # ------------------------------------------------------------------------- 
+    df = load_data(DATA_FILE)
+    
+    if df is not None:
+        
+        # 1. Quantify linear influence of numerical drivers
+        quantify_numerical_influence(df.copy())
+
+        # 2. Quantify statistical influence of categorical drivers using ANOVA
+        quantify_categorical_influence(df.copy())
+        
+    print("\nStatistical claims driver analysis script finished.")
+```
+### --- 1. Numerical Drivers: Correlation Analysis ---
+
+Correlation of Numerical Drivers with Claims Metrics:
+Interpretation: Closer to 1 or -1 means stronger linear influence.
+
+|Premium_Amount|Claims_Frequency|Claims_Adjustment|Abs_Frequency_Corr|Abs_Adjustment_Corr|
+|-|-|-|-|-|
+||0.355|0.439|0.355|0.439|
+|Age|-0.006|-0.008|0.006|0.008|
+|Website_Visits|0.005|0.005|0.005|0.005|
+|Total_Discounts|0.003|-0.003|0.003|0.003|
+|Credit_Score|0.002|0.006|0.002|0.006|
+
+<img width="780" height="590" alt="download" src="https://github.com/user-attachments/assets/35b64ba0-7731-4663-94d3-b70899460e39" />
+
+### --- 2. Categorical Drivers: ANOVA (Influence on Claims Adjustment) ---
+ANOVA Test Results for Claims Adjustment:
+**Interpretation: A low P-Value (< 0.05) and high F-Statistic means the category has a SIGNIFICANT influence on the average Claims Adjustment amount.**
+
+|Driver|F_Statistic|P_Value|Significant_at_5%|
+|-|-|-|-|
+|Marital_Status|1.03|0.37857|False|
+|Policy_Type|0.40 0.52795|False|
+|Region|0.08|0.92231|False|
+
+**No categorical drivers were found to have a statistically significant influence on Claims Adjustment.**
+
 
 
 
