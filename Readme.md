@@ -1,4 +1,3 @@
-
 # Insurance Risk Analysis
 
 ---
@@ -20,7 +19,8 @@ The final analysis is thoroughly documented within this repository, detailing ea
 The repository is structured to provide clear access to the following project components:
 
 * **data:** Contains the raw and/or cleaned datasets used for the analysis.
-* **/scripts:** Includes reusable Python scripts for specific tasks (e.g., data loading functions).
+* **EDA** Includes reusable Python scripts and explainations going over the exploratoory data analysis of this data set
+* **Risk_Analysis** Includes reusable Python scripts and explainations going over more in depth analysis
 * **README.md:** This introductory overview and project documentation.
 
 This project serves as a demonstration of proficiency in data manipulation, statistical analysis, and professional reporting in a Python environment.
